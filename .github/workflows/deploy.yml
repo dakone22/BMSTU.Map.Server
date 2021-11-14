@@ -1,0 +1,24 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - 'master'
+
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploying through SSH
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          port: ${{ secrets.PORT }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.KEY }}
+          script: |
+            cd ~/deployed/telegram-worker && git checkout master && git pull origin master
+            cd ~/deployed && (docker stop telegram-worker && docker rm telegram-worker) || true
+            cd ~/deployed && docker-compose build telegram-worker && docker-compose up -d telegram-worker
